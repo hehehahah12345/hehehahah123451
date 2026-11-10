@@ -1,0 +1,54 @@
+{
+  "name": "jarvis",
+  "productName": "JARVIS",
+  "version": "1.0.0",
+  "description": "Personal assistant with a sci-fi heads-up display",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder"
+  },
+  "license": "GPL-3.0",
+  "build": {
+    "appId": "local.jarvis.hud",
+    "productName": "JARVIS",
+    "files": [
+      "src/**",
+      "assets/**",
+      "node_modules/**",
+      "package.json"
+    ],
+    "asarUnpack": [
+      "node_modules/uiohook-napi/**",
+      "node_modules/onnxruntime-node/**",
+      "node_modules/sharp/**",
+      "node_modules/@img/**"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "assets/icon.png"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "assets/icon.png"
+    }
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.7.0",
+    "@fontsource/barlow": "^5.3.0",
+    "@fontsource/barlow-condensed": "^5.3.0",
+    "@fontsource/jetbrains-mono": "^5.3.0",
+    "@huggingface/transformers": "^4.3.2",
+    "systeminformation": "^5.33.19",
+    "uiohook-napi": "^1.5.5",
+    "vosk-browser": "^0.0.8"
+  },
+  "devDependencies": {
+    "electron": "^45.2.3",
+    "electron-builder": "^26.18.0"
+  }
+}

@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' app:; script-src 'self' app: 'wasm-unsafe-eval' blob:; worker-src 'self' app: blob:; style-src 'self' app: 'unsafe-inline'; font-src 'self' app:; img-src 'self' app: data: blob:; media-src 'self' app: blob: mediastream:; connect-src 'self' app: blob: data:">
+<title>Jarvis HUD</title>
+<!-- Same fonts as the web version, bundled with the app so they work offline -->
+<link rel="stylesheet" href="app://jarvis/fonts/barlow-condensed/600.css">
+<link rel="stylesheet" href="app://jarvis/fonts/barlow-condensed/700.css">
+<link rel="stylesheet" href="app://jarvis/fonts/barlow/400.css">
+<link rel="stylesheet" href="app://jarvis/fonts/barlow/500.css">
+<link rel="stylesheet" href="app://jarvis/fonts/barlow/600.css">
+<link rel="stylesheet" href="app://jarvis/fonts/jetbrains-mono/400.css">
+<link rel="stylesheet" href="app://jarvis/fonts/jetbrains-mono/600.css">
+<link rel="stylesheet" href="hud.css">
+</head>
+<body>
+<canvas id="fx" aria-hidden="true"></canvas>
+<div class="app">
+  <header class="top gut">
+    <div class="brand">J<i>.</i>A<i>.</i>R<i>.</i>V<i>.</i>I<i>.</i>S</div>
+    <div class="status" id="status" role="status" aria-live="polite"><b>Standby</b></div>
+    <button class="mini" id="mini" type="button" hidden title="Focus timer running. Click to go home."></button>
+    <div class="tools">
+      <button class="tb" id="bHome" type="button">Home</button>
+      <button class="tb" id="bNight" type="button" title="Keep this computer awake with a dim screen">All night</button>
+      <button class="tb" id="bHelp" type="button" aria-expanded="false">Help</button>
+      <button class="tb" id="bHist" type="button" aria-expanded="false">History</button>
+      <button class="tb" id="bSet" type="button" aria-expanded="false">Settings</button>
+      <button class="tb" id="bFull" type="button">Full screen</button>
+    </div>
+    <div class="win">
+      <button class="tb" type="button" data-win="hide" title="Hide to the tray (Ctrl+Alt+J brings it back)">Hide</button>
+      <button class="tb" type="button" data-win="quit" title="Quit JARVIS">Quit</button>
+    </div>
+  </header>
+
+  <main class="board gut" id="board">
+    <section class="home" id="home">
+      <div class="hcol">
+        <div class="card">
+          <div class="hd"><span>Focus timer</span><span id="tLabel">Ready</span></div>
+          <div class="tdisp"><div class="tstate idle" id="tState">Idle</div><div class="ttime"><span id="tTime">25:00</span><small id="tSub">min<br>set</small></div></div>
+          <div class="btnrow">
+            <button class="tb" type="button" data-min="5">5</button><button class="tb" type="button" data-min="15">15</button><button class="tb" type="button" data-min="25">25</button><button class="tb" type="button" data-min="45">45</button>
+            <button class="tb on" type="button" id="tGo">Start</button><button class="tb" type="button" id="tReset">Reset</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="hd"><span>School</span><span id="schWhen">Brightspace · Classroom</span></div>
+          <div class="sch" id="sch"></div>
+          <div class="due" id="schDue"></div>
+          <div class="fine" id="schMsg">Your classes, marks and what's due show here once you sign in.</div>
+          <div class="btnrow">
+            <button class="tb" type="button" id="schGo">Load school</button>
+            <button class="tb" type="button" data-signin="brightspace">Brightspace sign-in</button>
+            <button class="tb" type="button" data-signin="classroom">Classroom sign-in</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="hd"><span>This computer</span><span id="awakeTag">Normal sleep</span></div>
+          <dl class="spec" id="spec"></dl>
+          <div class="btnrow"><button class="tb on" type="button" id="bNight2">Run all night</button></div>
+        </div>
+        <div class="card">
+          <div class="hd"><span>Scratch notes</span><span>Saved on this computer</span></div>
+          <textarea class="notes" id="notes" placeholder="Type a note, or tell Jarvis &quot;note that…&quot;" aria-label="Scratch notes"></textarea>
+        </div>
+      </div>
+      <div class="core">
+        <canvas id="core" width="880" height="880" aria-hidden="true"></canvas>
+        <div class="coreTxt"><div class="greet" id="greet">Good evening, Sir</div><div class="bigClock" id="bigClock">00:00</div><div class="bigDate" id="bigDate"></div><div class="tapHint" id="tapHint">Type below to begin</div></div>
+      </div>
+      <div class="hcol">
+        <div class="card">
+          <div class="hd"><span>Systems</span><span id="sysCount"></span></div>
+          <div class="sys" id="sys"></div>
+          <div class="btnrow"><button class="tb on" type="button" id="bOnline">Bring everything online</button><button class="tb" type="button" id="bBrief">Brief me</button></div>
+          <div class="fine" id="sysNote">One click turns on the microphone, the wake word and speech recognition, and checks school.</div>
+        </div>
+        <div class="card">
+          <div class="hd"><span>Weather</span><span id="wxWhen">Open-Meteo</span></div>
+          <div class="wxNow" id="wxNow"><div class="fine" id="wxMsg">Loading the weather…</div></div>
+          <div class="wxDays" id="wxDays"></div>
+          <div class="btnrow"><button class="tb" type="button" data-wx="toronto">Toronto</button><button class="tb" type="button" data-wx="caledon">Caledon</button><button class="tb" type="button" id="wxGo">Load weather</button></div>
+        </div>
+        <div class="card">
+          <div class="hd"><span>Recent boards</span><span>This computer</span></div>
+          <div class="rec" id="rec"></div>
+        </div>
+      </div>
+    </section>
+    <div class="cols" id="cols" hidden></div>
+  </main>
+
+  <footer class="cmd gut">
+    <div class="cap" id="cap" hidden><b>JARVIS</b><span id="capTxt"></span><div class="btnrow" id="capBtns"></div></div>
+    <div class="chips" id="chips"></div>
+    <form class="row" id="form" autocomplete="off">
+      <div class="orb" id="orb" aria-hidden="true">J</div>
+      <div class="field">
+        <div class="thumb" id="thumb" hidden><img id="thumbImg" alt="Attached photo"><button type="button" id="thumbX" aria-label="Remove photo">×</button></div>
+        <input type="text" id="q" placeholder="Ask Jarvis anything, say &quot;Jarvis&quot;, or hold Space to talk…" aria-label="Ask Jarvis" enterkeyhint="go">
+        <button class="ib" type="button" id="bCam" aria-label="Scan an object with the camera" title="Scan an object with the camera"><svg viewBox="0 0 24 24"><path d="M3 7V4h3M21 7V4h-3M3 17v3h3M21 17v3h-3"/><circle cx="12" cy="12" r="4"/></svg></button>
+        <button class="ib" type="button" id="bPhoto" aria-label="Attach a photo to identify" title="Attach a photo to identify"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg></button>
+        <button class="ib" type="button" id="bMic" aria-label="Speak your request" title="Speak your request (or hold Space, or your hold-to-talk key)"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+        <input type="file" id="file" accept="image/*" hidden>
+      </div>
+      <button class="go" type="submit" id="go">Run</button>
+    </form>
+    <div class="foot" id="foot">Weather by Open-Meteo. Research uses Claude's live web search. Check prices and anything recent before acting on it.</div>
+  </footer>
+</div>
+
+<div class="sheet" id="sheet" hidden></div>
+<div class="sheet" id="setSheet" hidden>
+  <h4>Keys</h4>
+  <div class="set col2"><label for="kClaude">Claude API key <span class="fine" id="kClaudeSt"></span></label><input type="password" id="kClaude" placeholder="sk-ant-…  (leave blank to keep)"></div>
+  <div class="set col2"><label for="kEleven">ElevenLabs key (optional) <span class="fine" id="kElevenSt"></span></label><input type="password" id="kEleven" placeholder="leave blank to keep"></div>
+  <div class="set col2"><label for="kVoiceId">ElevenLabs voice ID</label><input type="text" id="kVoiceId"></div>
+  <div class="set"><span class="lbl"></span><button class="tb on" type="button" id="kSave">Save keys</button></div>
+  <h4>Voice</h4>
+  <div class="set"><span class="lbl">Speak replies out loud</span><button class="tb" type="button" id="sVoice">On</button></div>
+  <div class="set"><label for="sVoiceName">Built-in voice</label><span class="btnrow"><select id="sVoiceName"></select><button class="tb" type="button" id="sTest">Test</button></span></div>
+  <div class="set"><label for="sRate">Speed</label><input type="range" id="sRate" min="0.8" max="1.2" step="0.05"></div>
+  <h4>Listening</h4>
+  <div class="set"><span class="lbl">Wake word "Jarvis"</span><button class="tb" type="button" id="sWake">On</button></div>
+  <div class="set"><label for="sPtt">Hold-to-talk key</label><select id="sPtt"><option value="RightCtrl">Right Ctrl</option><option value="RightAlt">Right Alt / Option</option><option>F8</option><option>F9</option><option>F10</option><option>CapsLock</option></select></div>
+  <h4>Look</h4>
+  <div class="set"><span class="lbl">Colour skin</span><span class="btnrow" id="skins"></span></div>
+  <div class="set"><span class="lbl">Interface sounds</span><button class="tb" type="button" id="sSfx">On</button></div>
+  <h4>Brain</h4>
+  <div class="set"><span class="lbl">Thinking</span><button class="tb" type="button" id="sDepth" title="Deep is more careful. Fast answers almost at once.">Deep</button></div>
+  <div class="set"><label for="sModel">Model</label><input type="text" id="sModel" style="width:170px"></div>
+  <h4>Computer</h4>
+  <div class="set"><span class="lbl">Start with the computer</span><button class="tb" type="button" id="sAuto">On</button></div>
+  <div class="set"><label for="sUnits">Units</label><select id="sUnits"><option value="metric">Metric</option><option value="imperial">Imperial</option></select></div>
+  <h4>School</h4>
+  <div class="set"><label for="sSchMin">Check every (minutes)</label><input type="number" id="sSchMin" min="15" style="width:90px"></div>
+  <div class="set"><span class="lbl">Forget school sign-ins</span><button class="tb" type="button" id="sSignOut">Sign out</button></div>
+</div>
+<div class="sheet help" id="helpSheet" hidden>
+  <h4>How to use Jarvis</h4>
+  <h5>1. Ask</h5><p>Say "Jarvis" and then your request. Or hold the Space bar (in this window) or Right Ctrl (anywhere), talk, and let go. Or type in the bar and press Enter.</p>
+  <h5>2. Get the answer</h5><p>Quick things are spoken and shown as a caption. Bigger questions open a board of panels. Drag panels by their top line, or press Dig deeper on one for more.</p>
+  <h5>3. Go back</h5><p>Home returns to the main screen. History reopens old boards. Esc stops Jarvis mid-answer.</p>
+  <h5>Try saying</h5>
+  <div class="ex" id="helpEx"></div>
+  <h5>Shortcuts</h5><p>Ctrl+Alt+J shows or hides this window from anywhere. Ctrl+Alt+Space starts talking (press again to send). Closing the window keeps Jarvis in the tray.</p>
+  <h5>All night</h5><p>Blocks sleep and shows a dim clock. It switches off by itself when you quit Jarvis.</p>
+</div>
+<div class="night" id="night" hidden>
+  <div class="nightIn" id="nightIn">
+    <div class="nClock" id="nClock">00:00</div>
+    <div class="nLine" id="nState"></div>
+    <div class="nLine" id="nSince"></div>
+    <button type="button" id="nExit">Wake up Jarvis</button>
+  </div>
+</div>
+<div class="cam" id="cam" hidden>
+  <div class="camHint" id="camHint">Hold the object up to the camera</div>
+  <div class="camBox"><video id="camVideo" autoplay playsinline muted></video><div class="scanline"></div><div class="camCount" id="camCount"></div></div>
+  <div class="btnrow"><button class="tb on" type="button" id="camShot">Capture now</button><button class="tb" type="button" id="camX">Cancel</button></div>
+</div>
+<div class="drop" id="drop" hidden>Drop photo to scan</div>
+
+<script src="app://jarvis/lib/vosk.js"></script>
+<script src="voice.js"></script>
+<script src="hud.js"></script>
+</body>
+</html>
