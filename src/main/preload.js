@@ -9,12 +9,14 @@ const on = (channel) => (fn) => {
 
 contextBridge.exposeInMainWorld('jarvis', {
   ask: (text, image) => ipcRenderer.invoke('ask', { text, image }),
-  tts: (text) => ipcRenderer.invoke('tts', text),
+  expand: (args) => ipcRenderer.invoke('expand', args),
+  cancel: () => ipcRenderer.invoke('cancel'),
+  tts: (text, rate) => ipcRenderer.invoke('tts', text, rate),
   transcribe: (audio) => ipcRenderer.invoke('transcribe', audio),
   sttWarmup: () => ipcRenderer.invoke('stt-warmup'),
   wakeModel: () => ipcRenderer.invoke('wake-model'),
   specs: () => ipcRenderer.invoke('specs'),
-  weather: () => ipcRenderer.invoke('weather'),
+  weather: (place) => ipcRenderer.invoke('weather', place),
   school: {
     get: () => ipcRenderer.invoke('school-get'),
     refresh: () => ipcRenderer.invoke('school-refresh'),
@@ -27,14 +29,17 @@ contextBridge.exposeInMainWorld('jarvis', {
   },
   timer: (cmd) => ipcRenderer.invoke('timer', cmd),
   timerGet: () => ipcRenderer.invoke('timer-get'),
-  setNotes: (notes) => ipcRenderer.invoke('notes-set', notes),
+  notesGet: () => ipcRenderer.invoke('notes-get'),
+  setNotes: (text) => ipcRenderer.invoke('notes-set', text),
   setAwake: (on) => ipcRenderer.invoke('awake', on),
+  awakeGet: () => ipcRenderer.invoke('awake-get'),
   windowAction: (a) => ipcRenderer.invoke('window', a),
   openUrl: (u) => ipcRenderer.invoke('open-url', u),
   cameraResult: (id, image) => ipcRenderer.send('camera-result', { id, image }),
   on: {
-    say: on('say'), status: on('status'), timer: on('timer'), notes: on('notes'), skin: on('skin'),
-    awake: on('awake'), live: on('live'), school: on('school'), ptt: on('ptt'), talkToggle: on('talk-toggle'),
-    cameraScan: on('camera-scan'), openSettings: on('open-settings'), settings: on('settings'),
+    askText: on('ask-text'), lookup: on('lookup'), timer: on('timer'), timerDone: on('timer-done'),
+    notes: on('notes'), skin: on('skin'), awake: on('awake'), live: on('live'), school: on('school'),
+    ptt: on('ptt'), talkToggle: on('talk-toggle'), cameraScan: on('camera-scan'),
+    openSettings: on('open-settings'), settings: on('settings'),
   },
 });

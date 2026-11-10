@@ -170,10 +170,10 @@ function get() { return data; }
 function summary() {
   const out = { updated: data.updated };
   const b = data.brightspace;
-  out.brightspace = !b ? 'not checked yet' : !b.signedIn ? 'not signed in – open School sign-in from the tray menu' :
+  out.brightspace = !b ? 'not checked yet' : !b.signedIn ? 'not signed in – Sir must press "Brightspace sign-in" in the School card and log in himself' :
     b.courses.map((c) => ({ course: c.name, grade: c.grade, recentGrades: c.grades.slice(-6), due: c.due }));
   const c = data.classroom;
-  out.classroom = !c ? 'not checked yet' : !c.signedIn ? 'not signed in – open Classroom sign-in from the tray menu' :
+  out.classroom = !c ? 'not checked yet' : !c.signedIn ? 'not signed in – Sir must press "Classroom sign-in" in the School card and log in himself' :
     { classes: c.classes, todo: c.todo.map(({ url, ...t }) => t) };
   return out;
 }

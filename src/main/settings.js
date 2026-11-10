@@ -8,8 +8,8 @@ const path = require('path');
 const DEFAULTS = {
   model: 'claude-opus-5-5',
   effort: 'low',            // low = fastest replies; raise to "medium" for deeper answers
-  skin: 'arc',
-  city: 'Toronto',
+  skin: 'ice',          // ice, arc, ember or ghost
+  depth: 'default',     // 'quick' = fastest answers
   units: 'metric',
   wakeWord: true,
   pushToTalkKey: 'RightCtrl',
@@ -18,7 +18,11 @@ const DEFAULTS = {
   startWithComputer: true,
   schoolRefreshMinutes: 120,
   elevenVoiceId: 'JBFqnCBsd6RMkjVDRZzb',
-  notes: [],
+  notes: '',
+  voice: true,          // speak replies out loud
+  rate: 1.05,           // speaking speed
+  sfx: true,            // interface sounds
+  place: 'toronto',     // weather card: toronto or caledon
 };
 const SECRET_KEYS = ['anthropicKey', 'elevenKey'];
 

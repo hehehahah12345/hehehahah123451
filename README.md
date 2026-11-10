@@ -18,8 +18,8 @@ sites, and can keep your computer awake all night.
    npm install
    npm start
    ```
-5. **Add your Claude key.** The Settings window opens by itself. Paste your Claude API key
-   (from <https://console.anthropic.com> → API Keys), then click **Save**.
+5. **Add your Claude key.** The Settings panel opens by itself. Paste your Claude API key
+   (from <https://console.anthropic.com> → API Keys), then click **Save keys**.
    You can also paste an ElevenLabs key here if you want a better voice.
 
 The first time you talk to JARVIS, it downloads two small speech models (about 120 MB).
@@ -35,27 +35,28 @@ After that, speech recognition runs on your computer and works without internet.
 
 | To do this | Do this |
 |---|---|
-| Talk | Say **"Jarvis"**, then your request. Or **hold Right Ctrl** while you talk. Or click the ● button. |
+| Talk | Say **"Jarvis"**, then your request. Or **hold Space** (in the JARVIS window) or **hold Right Ctrl** (anywhere) while you talk. Or click the big ring or the mic icon. |
 | Type | Type in the bar at the bottom and press Enter. Press `/` to jump to it. |
 | Show or hide the HUD | **Ctrl+Alt+J**, or click the tray icon (next to the clock in your taskbar). |
 | Talk with a shortcut (press, then press again to stop) | **Ctrl+Alt+Space** |
-| Scan an object | Click **SCAN**, hold the object up, and wait for the 5-second countdown. Or say "Jarvis, what is this?" |
-| Keep the computer awake | Click **NIGHT**, or say "run all night". The screen dims to a clock. It turns off by itself when you quit JARVIS. |
-| Go back from a research board | Click **◂ HOME** or press Esc. You can drag the panels around. |
-| Quit for real | Use the ✕ button at the top right, or right-click the tray icon and choose **Quit JARVIS**. (Closing the window only hides it.) |
+| Scan an object | Click the scan icon (the square with a circle) in the command bar, hold the object up, and wait for the 5-second countdown. Or say "Jarvis, what is this?" You can also attach, drag in or paste a photo. |
+| Keep the computer awake | Click **All night**, or say "run all night". The screen dims to a slowly moving clock. Click the clock to turn it off. It also turns off by itself when you quit JARVIS. |
+| Go back from a research board | Click **Home**. Drag panels by their top line. **+ Dig deeper** adds 3 more panels about one panel. **History** reopens old boards. Esc stops JARVIS mid-answer. |
+| Quit for real | Click **Quit** at the top right, or right-click the tray icon and choose **Quit JARVIS**. (**Hide** only hides the window.) |
 
 Things you can say:
 - "Start a 25 minute timer for math", "pause the timer"
 - "Note that the bio test is Friday", "read my notes"
-- "Switch to the red skin". The four skins are arc (cyan), mark (red/gold), stealth (white) and emerald (green).
+- "Switch to the arc skin". The four skins are ice (blue/red), arc (cyan/gold), ember (orange) and ghost (green).
 - "What graphics card do I have?", "how hot is my CPU?"
 - "Open Spotify", "open my history essay", "open YouTube"
 - "Pause the music", "next song", "volume to 30"
 - "What's due this week?", "what's my grade in chemistry?"
 - "Research black holes", "compare the iPhone and Pixel cameras"
 
-When JARVIS has to look something up, it says "One moment." and then shows a board.
-It does not read the board out loud.
+When JARVIS has to look something up, it says "One moment." Then it builds a board panel by panel, and says one or two sentences with the headline.
+
+In **Settings → Brain**, choose **Deep** (the default, Claude Opus 5.5) or **Fast** (Claude Sonnet 5.5, which answers almost at once).
 
 ### School (Brightspace and Google Classroom)
 
@@ -67,7 +68,7 @@ After that, JARVIS reads your courses, grades and due dates every 2 hours, and w
 - JARVIS **never asks for, saves or types your password**. The school's own sign-in page handles it. JARVIS keeps only the "you're logged in" cookie, the same way a browser does, and keeps it in its own separate profile.
 - If the school signs you out, the card says so. Sign in again.
 - JARVIS does not try to get around any school login or block. If Google refuses to sign you in inside the app (Google sometimes blocks sign-in from app windows), Classroom will stay unavailable. That is Google's rule, and JARVIS leaves it alone.
-- To remove the sign-ins, open **Settings → Sign out of school sites**.
+- To remove the sign-ins, open **Settings → School → Sign out**.
 
 ---
 
@@ -87,24 +88,25 @@ After that, JARVIS reads your courses, grades and due dates every 2 hours, and w
 
 ## Files (if you want to change things)
 
+The HUD is your original `jarvis-hud.html` (a copy is kept in `design/`). Its HTML and CSS are reused as they were. Only the parts the web page couldn't do were swapped for desktop features.
+
 | File | What it does |
 |---|---|
-| `src/renderer/index.html`, `hud.css` | The HUD layout and the four skins (colours at the top of `hud.css`) |
-| `src/renderer/hud.js` | Clock, cards, caption, command bar, night screen, camera, settings |
-| `src/renderer/board.js` | Research board: one renderer per panel type |
+| `src/renderer/index.html`, `hud.css` | The HUD layout and the four skins (colours near the top of `hud.css`) |
+| `src/renderer/hud.js` | Boards, panels, history, timer, notes, systems, weather, school, night screen, camera, settings |
 | `src/renderer/voice.js` | Wake word, recording, speaking |
-| `src/main/brain.js` | Claude's instructions and tool list |
-| `src/main/main.js` | Tray, hotkeys, stay-awake, and what each tool actually does |
+| `src/main/brain.js` | Claude's instructions, the panel format, and the tool list |
+| `src/main/main.js` | Tray, hotkeys, stay-awake, weather, and what each tool actually does |
 | `src/main/control.js` | Opening apps, files, websites, media keys, volume |
 | `src/main/system.js` | Computer info |
 | `src/main/school.js` | Brightspace and Classroom reader |
 
-**Panel format.** Claude replies with one JSON object per line:
-`subject`, `note`, `stat`, `list`, `steps`, `bars`, `table`, `warn`, `links`, plus `ack`, which is spoken only. Example:
+**Panel format** (same as your web version). Claude replies with one JSON object per line. The types are `subject`, `note`, `stat`, `list`, `steps`, `bars`, `table`, `warn` and `links`, plus `ack` for spoken-only replies:
 ```
-{"type":"subject","title":"Mitochondria","subtitle":"Cell organelle","caption":"The cell's power plant"}
-{"type":"stat","label":"Size","value":"0.5–1","unit":"µm"}
-{"type":"ack","say":"Timer started for 25 minutes."}
+{"t":"subject","title":"Mitochondria","kicker":"Cell biology","tagline":"The cell's power plant.","say":"Mitochondria make the cell's energy, Sir."}
+{"t":"stat","value":"0.5–1 µm","label":"Typical size","detail":"About a hundredth of a hair's width."}
+{"t":"bars","title":"...","unit":"USD","bars":[{"l":"8 GB","v":80},{"l":"4 GB","v":60}],"note":"..."}
+{"t":"ack","say":"Timer started for 25 minutes, Sir."}
 ```
 
 ## Troubleshooting
