@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' app:; script-src 'self' app: 'wasm-unsafe-eval' blob:; worker-src 'self' app: blob:; style-src 'self' app: 'unsafe-inline'; img-src 'self' app: data: blob: https:; media-src 'self' app: blob: mediastream:; connect-src 'self' app: blob: data:">
+<title>JARVIS</title>
+<link rel="stylesheet" href="hud.css">
+</head>
+<body data-skin="arc">
+<div id="grid-bg"></div>
+<div id="scanlines"></div>
+
+<!-- ============ TOP BAR (drag the window from here) ============ -->
+<header id="topbar">
+  <div class="brand"><span class="brand-dot"></span>J.A.R.V.I.S<span class="brand-sub">personal assistant</span></div>
+  <div class="chips">
+    <span class="chip" id="chip-mic" title="Microphone">MIC —</span>
+    <span class="chip" id="chip-wake" title="Wake word">WAKE —</span>
+    <span class="chip" id="chip-voice" title="Voice">VOICE —</span>
+    <span class="chip" id="chip-awake" title="Run all night">SLEEP OK</span>
+  </div>
+  <div class="win-buttons">
+    <button data-win="fullscreen" title="Full screen">⛶</button>
+    <button data-win="hide" title="Hide to tray">—</button>
+    <button data-win="quit" title="Quit JARVIS">✕</button>
+  </div>
+</header>
+
+<!-- ============ HOME SCREEN ============ -->
+<main id="home">
+  <section class="col col-left">
+    <article class="card" id="card-timer">
+      <h3><span>Focus timer</span><em id="timer-label">Focus</em></h3>
+      <div class="timer-body">
+        <svg viewBox="0 0 120 120" class="timer-ring">
+          <circle cx="60" cy="60" r="52" class="track"/>
+          <circle cx="60" cy="60" r="52" class="bar" id="timer-bar"/>
+        </svg>
+        <div class="timer-readout" id="timer-readout">25:00</div>
+      </div>
+      <div class="btn-row">
+        <button data-timer="start" data-min="25">25</button>
+        <button data-timer="start" data-min="50">50</button>
+        <button data-timer="toggle" id="timer-toggle">Pause</button>
+        <button data-timer="stop">Reset</button>
+      </div>
+    </article>
+
+    <article class="card" id="card-notes">
+      <h3><span>Notes</span><em id="notes-count">0</em></h3>
+      <ul id="notes-list" class="notes"></ul>
+      <form id="notes-form"><input id="notes-input" placeholder="Add a note…" autocomplete="off"></form>
+    </article>
+
+    <article class="card" id="card-systems">
+      <h3><span>Systems</span><em id="sys-temp">—</em></h3>
+      <div class="meters" id="sys-meters"></div>
+    </article>
+  </section>
+
+  <section class="col col-centre">
+    <div id="reactor">
+      <svg viewBox="0 0 400 400" id="ring">
+        <defs>
+          <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="var(--accent)" stop-opacity=".22"/>
+            <stop offset="70%" stop-color="var(--accent)" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+        <circle cx="200" cy="200" r="190" fill="url(#glow)"/>
+        <g class="spin s1"><circle cx="200" cy="200" r="186" class="r thin dash-a"/></g>
+        <g class="spin s2"><circle cx="200" cy="200" r="170" class="r thick dash-b"/></g>
+        <g class="spin s3"><circle cx="200" cy="200" r="156" class="r thin dash-c"/></g>
+        <g class="spin s4"><circle cx="200" cy="200" r="140" class="r mid dash-d"/></g>
+        <circle cx="200" cy="200" r="128" class="r faint"/>
+        <g id="ticks"></g>
+        <circle cx="200" cy="200" r="118" class="r sec-track"/>
+        <circle cx="200" cy="200" r="118" class="r sec-bar" id="sec-bar"/>
+      </svg>
+      <div id="clock">
+        <div id="clock-time">00:00</div>
+        <div id="clock-sec">00</div>
+        <div id="clock-date">—</div>
+        <div id="state-label">STANDING BY</div>
+      </div>
+      <div id="voice-wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+  </section>
+
+  <section class="col col-right">
+    <article class="card" id="card-weather">
+      <h3><span>Weather</span><em id="wx-place">—</em></h3>
+      <div class="wx-now"><div class="wx-temp" id="wx-temp">—</div><div class="wx-meta" id="wx-meta"></div></div>
+      <div class="wx-days" id="wx-days"></div>
+    </article>
+
+    <article class="card" id="card-school">
+      <h3><span>School</span><em id="school-updated">—</em></h3>
+      <div id="school-body" class="school"></div>
+      <div class="btn-row small">
+        <button data-school="refresh">Refresh</button>
+        <button data-school="brightspace">Brightspace sign-in</button>
+        <button data-school="classroom">Classroom sign-in</button>
+      </div>
+    </article>
+
+    <article class="card" id="card-computer">
+      <h3><span>This computer</span><em id="pc-os">—</em></h3>
+      <dl id="pc-specs" class="specs"></dl>
+    </article>
+  </section>
+</main>
+
+<!-- ============ RESEARCH BOARD ============ -->
+<section id="board" hidden>
+  <svg id="wires"></svg>
+  <div id="board-panels"></div>
+  <button id="board-close" title="Back to home (Esc)">◂ HOME</button>
+</section>
+
+<!-- ============ CAPTION + COMMAND BAR ============ -->
+<div id="caption"><span id="caption-who">JARVIS</span><span id="caption-text">Good to see you. Say "Jarvis" or type below.</span></div>
+<form id="command">
+  <button type="button" id="btn-mic" title="Talk (or hold your push-to-talk key)">●</button>
+  <input id="command-input" placeholder="Ask JARVIS anything…" autocomplete="off" spellcheck="false">
+  <button type="button" id="btn-scan" title="Camera scan">SCAN</button>
+  <button type="button" id="btn-awake" title="Run all night">NIGHT</button>
+  <button type="button" id="btn-settings" title="Settings">⚙</button>
+</form>
+
+<!-- ============ ALL-NIGHT SCREEN ============ -->
+<section id="night" hidden>
+  <div id="night-clock">00:00</div>
+  <div id="night-date">—</div>
+  <div id="night-note">Run-all-night is on · sleep is blocked</div>
+  <div class="night-buttons">
+    <button id="night-peek">Show HUD</button>
+    <button id="night-off">Turn off</button>
+  </div>
+</section>
+
+<!-- ============ CAMERA SCAN ============ -->
+<section id="camera" hidden>
+  <div class="cam-frame">
+    <video id="cam-video" autoplay playsinline muted></video>
+    <div class="cam-corners"><i></i><i></i><i></i><i></i></div>
+    <div id="cam-count"></div>
+  </div>
+  <div id="cam-hint">Hold the object up to the camera</div>
+  <div class="btn-row">
+    <button id="cam-capture">Capture now</button>
+    <button id="cam-cancel">Cancel</button>
+  </div>
+</section>
+
+<!-- ============ SETTINGS ============ -->
+<section id="settings" hidden>
+  <form id="settings-form" class="card">
+    <h3><span>Settings</span><button type="button" id="settings-close">✕</button></h3>
+    <label>Claude API key <small id="k-anthropic">not set</small>
+      <input type="password" name="anthropicKey" placeholder="sk-ant-… (leave blank to keep)"></label>
+    <label>ElevenLabs API key (optional) <small id="k-eleven">not set — using built-in voice</small>
+      <input type="password" name="elevenKey" placeholder="leave blank to keep"></label>
+    <label>ElevenLabs voice ID <input name="elevenVoiceId"></label>
+    <div class="two">
+      <label>Model <input name="model"></label>
+      <label>Thinking effort
+        <select name="effort"><option>low</option><option>medium</option><option>high</option></select></label>
+    </div>
+    <div class="two">
+      <label>Weather city <input name="city"></label>
+      <label>Units <select name="units"><option>metric</option><option>imperial</option></select></label>
+    </div>
+    <div class="two">
+      <label>Skin <select name="skin"><option value="arc">Arc (cyan)</option><option value="mark">Mark (red/gold)</option><option value="stealth">Stealth (white)</option><option value="emerald">Emerald (green)</option></select></label>
+      <label>School check every (minutes) <input type="number" min="15" name="schoolRefreshMinutes"></label>
+    </div>
+    <div class="two">
+      <label>Hold-to-talk key <select name="pushToTalkKey"><option>RightCtrl</option><option>RightAlt</option><option>F8</option><option>F9</option><option>F10</option><option>CapsLock</option></select></label>
+      <label>Show/hide HUD shortcut <input name="toggleHudShortcut"></label>
+    </div>
+    <label class="check"><input type="checkbox" name="wakeWord"> Listen for "Jarvis"</label>
+    <label class="check"><input type="checkbox" name="startWithComputer"> Start with the computer</label>
+    <div class="btn-row">
+      <button type="submit">Save</button>
+      <button type="button" id="school-signout">Sign out of school sites</button>
+    </div>
+  </form>
+</section>
+
+<script src="app://jarvis/lib/vosk.js"></script>
+<script src="board.js"></script>
+<script src="voice.js"></script>
+<script src="hud.js"></script>
+</body>
+</html>
