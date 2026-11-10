@@ -12,9 +12,11 @@ const DEFAULTS = {
   depth: 'default',     // 'quick' = fastest answers
   units: 'metric',
   wakeWord: true,
-  pushToTalkKey: 'RightCtrl',
+  // Macs usually have no right Control key, so hold Right Option there instead.
+  pushToTalkKey: process.platform === 'darwin' ? 'RightAlt' : 'RightCtrl',
   toggleHudShortcut: 'CommandOrControl+Alt+J',
-  talkShortcut: 'CommandOrControl+Alt+Space',
+  // Cmd+Option+Space opens Finder search on a Mac, so use Cmd+Shift+Space there.
+  talkShortcut: process.platform === 'darwin' ? 'CommandOrControl+Shift+Space' : 'CommandOrControl+Alt+Space',
   startWithComputer: true,
   schoolRefreshMinutes: 120,
   elevenVoiceId: 'JBFqnCBsd6RMkjVDRZzb',

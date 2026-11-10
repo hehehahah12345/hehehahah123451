@@ -306,7 +306,7 @@ function refreshSystems(){
   row("Brain","Claude answers, uses tools, builds boards",app.anthropicKeySet?["Online","on"]:["Add key","off"]);
   row("Web search","Claude's live search for anything recent",app.anthropicKeySet?["Online","on"]:["Add key","off"]);
   row("Voice",app.elevenKeySet?"ElevenLabs, with the built-in voice as backup":"Built-in computer voice",cfg.voice?["Online","on"]:["Muted",""]);
-  row("Microphone","Hold Space here, or "+(app.pushToTalkKey||"Right Ctrl")+" anywhere",v.micReady?["Online","on"]:["Ready","rdy"]);
+  row("Microphone","Hold Space here, or "+({RightCtrl:"Right Ctrl",RightAlt:/Mac/.test(navigator.platform)?"Right Option":"Right Alt"}[app.pushToTalkKey]||app.pushToTalkKey||"Right Ctrl")+" anywhere",v.micReady?["Online","on"]:["Ready","rdy"]);
   row("Wake word","Say \"Jarvis\", then your request",!app.wakeWord?["Off",""]:v.wakeReady?["Online","on"]:v.wakeLoading?["Loading","rdy"]:v.wakeError?["Failed","off"]:["Ready","rdy"]);
   row("Speech to text","Whisper, running on this computer",v.sttReady?["Online","on"]:v.sttError?["Failed","off"]:["Loading","rdy"]);
   var b=school.brightspace,c=school.classroom;
